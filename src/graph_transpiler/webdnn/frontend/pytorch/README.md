@@ -1,13 +1,12 @@
 # PyTorch frontend
 
-**under development**
+**In development**
 
 ## Example
 
 ```python
 import torch, torchvision
 from webdnn.frontend.pytorch import PyTorchConverter
-
 
 model = torchvision.models.alexnet(pretrained=True)
 dummy_input = torch.autograd.Variable(torch.randn(1, 3, 224, 224))

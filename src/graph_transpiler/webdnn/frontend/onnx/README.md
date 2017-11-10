@@ -1,12 +1,10 @@
 # ONNX frontend
 
-**under development**
+**In development**
 
 ## Setup
 
 ### ONNX
-
-You have to install .
 
 If you use anaconda, then it completes by just one command.
 
