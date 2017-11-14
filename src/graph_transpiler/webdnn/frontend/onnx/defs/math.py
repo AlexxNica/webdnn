@@ -2,7 +2,6 @@
 https://github.com/onnx/onnx/blob/09ada0f107f1cc1877f9194475c98d2d8512e188/onnx/defs/math/defs.cc
 """
 
-from webdnn.frontend.constraints import unify_order
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.defs.util import check_broadcast_constraints
 from webdnn.frontend.onnx.type_hint import INodeProto
@@ -30,9 +29,9 @@ def _convert_add(converter: ONNXConverter, onnx_op: INodeProto):
             check_broadcast_constraints(x0, x1, axis=attrs["axis"].i if "axis" in attrs else None)
 
         else:
-            unify_order(x0.order, x1.order)
+            x0.order.unify(x1.order)
     else:
-        unify_order(x0.order, x1.order)
+        x0.order.unify(x1.order)
 
     y = x0 + x1
     converter.set_variable(onnx_op.output[0], y)
@@ -51,9 +50,9 @@ def _convert_sub(converter: ONNXConverter, onnx_op: INodeProto):
             check_broadcast_constraints(x0, x1, axis=attrs["axis"].i if "axis" in attrs else None)
 
         else:
-            unify_order(x0.order, x1.order)
+            x0.order.unify(x1.order)
     else:
-        unify_order(x0.order, x1.order)
+        x0.order.unify(x1.order)
 
     y = x0 - x1
     converter.set_variable(onnx_op.output[0], y)
@@ -72,9 +71,9 @@ def _convert_mul(converter: ONNXConverter, onnx_op: INodeProto):
             check_broadcast_constraints(x0, x1, axis=attrs["axis"].i if "axis" in attrs else None)
 
         else:
-            unify_order(x0.order, x1.order)
+            x0.order.unify(x1.order)
     else:
-        unify_order(x0.order, x1.order)
+        x0.order.unify(x1.order)
 
     y = x0 * x1
     converter.set_variable(onnx_op.output[0], y)
@@ -93,9 +92,9 @@ def _convert_div(converter: ONNXConverter, onnx_op: INodeProto):
             check_broadcast_constraints(x0, x1, axis=attrs["axis"].i if "axis" in attrs else None)
 
         else:
-            unify_order(x0.order, x1.order)
+            x0.order.unify(x1.order)
     else:
-        unify_order(x0.order, x1.order)
+        x0.order.unify(x1.order)
 
     y = x0 / x1
     converter.set_variable(onnx_op.output[0], y)
@@ -266,8 +265,8 @@ def _convert_gemm(converter: ONNXConverter, onnx_op: INodeProto):
     beta = attrs["beta"].f
     broadcast = attrs.get("broadcast", 0)
 
-    unify_order(A.order, OrderNC)
-    unify_order(B.order, OrderCN)
+    A.order.unify(OrderNC)
+    B.order.unify(OrderCN)
     y, = Linear(None)(A, B)
 
     if broadcast:
@@ -277,7 +276,7 @@ def _convert_gemm(converter: ONNXConverter, onnx_op: INodeProto):
     converter.set_variable(onnx_op.output[0], y)
 
 
-@ONNXConverter.register_handler("MaxMul")
+@ONNXConverter.register_handler("MatMul")
 def _convert_matmul(converter: ONNXConverter, onnx_op: INodeProto):
     # FIXME: It's possible to support in current version of webdnn
-    raise NotImplementedError("[ONNXConverter] Operator \"MaxMul\" is not supported yet.")
+    raise NotImplementedError("[ONNXConverter] Operator \"MatMul\" is not supported yet.")

@@ -2,7 +2,6 @@
 https://github.com/onnx/onnx/blob/09ada0f107f1cc1877f9194475c98d2d8512e188/onnx/defs/tensor/defs.cc
 """
 
-from webdnn.frontend.constraints import AxisVar
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
 from webdnn.graph.operators.reshape import Reshape
@@ -23,8 +22,7 @@ def _convert_reshape(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
     attrs = attribute_dict(onnx_op)
     out_shape = list(attrs["shape"].ints)
-    # noinspection PyTypeChecker
-    out_order = Order([AxisVar() for _ in out_shape])
+    out_order = Order([None] * len(out_shape))
 
     y, = Reshape(None, in_order=x.order, out_order=out_order, out_shape=out_shape)(x)
     converter.set_variable(onnx_op.output[0], y)

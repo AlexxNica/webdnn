@@ -2,7 +2,6 @@
 https://github.com/onnx/onnx/blob/09ada0f107f1cc1877f9194475c98d2d8512e188/onnx/defs/nn/defs.cc
 """
 
-from webdnn.frontend.constraints import unify_order
 from webdnn.frontend.onnx.converter import ONNXConverter, attribute_dict
 from webdnn.frontend.onnx.type_hint import INodeProto
 from webdnn.graph.operators.average_pooling_2d import AveragePooling2D
@@ -15,7 +14,7 @@ from webdnn.util import console
 @ONNXConverter.register_handler("AveragePool")
 def _convert_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
-    unify_order(x.order, OrderNCHW)
+    x.order.unify(OrderNCHW)
 
     attrs = attribute_dict(onnx_op)
     ksize = list(attrs["kernel_shape"].ints)
@@ -27,7 +26,9 @@ def _convert_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
     pad = list(attrs["pads"].ints)
     if len(pad) == 2:
-        # FIXME: In PyTorch, pads is generated as tuple of 2 ints. It's maybe PyTorch's bug.
+        # NOTE:
+        # In PyTorch, pads is generated as tuple of 2 integers, but ONNX spec says that pads contains 2*N integers where N is the number of
+        # padded dimension. It's maybe PyTorch's bug.
         pass
 
     else:
@@ -42,7 +43,7 @@ def _convert_average_pool(converter: ONNXConverter, onnx_op: INodeProto):
 @ONNXConverter.register_handler("MaxPool")
 def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
-    unify_order(x.order, OrderNCHW)
+    x.order.unify(OrderNCHW)
 
     attrs = attribute_dict(onnx_op)
     ksize = list(attrs["kernel_shape"].ints)
@@ -54,7 +55,9 @@ def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
 
     pad = list(attrs["pads"].ints)
     if len(pad) == 2:
-        # FIXME: In PyTorch, pads is generated as tuple of 2 ints. It's maybe PyTorch's bug.
+        # NOTE:
+        # In PyTorch, pads is generated as tuple of 2 integers, but ONNX spec says that pads contains 2*N integers where N is the number of
+        # padded dimension. It's maybe PyTorch's bug.
         pass
 
     else:
@@ -69,10 +72,10 @@ def _convert_max_pool(converter: ONNXConverter, onnx_op: INodeProto):
 @ONNXConverter.register_handler("Conv")
 def _convert_conv(converter: ONNXConverter, onnx_op: INodeProto):
     x = converter.get_variable(onnx_op.input[0])
-    unify_order(x.order, OrderNCHW)
+    x.order.unify(OrderNCHW)
 
     w = converter.get_variable(onnx_op.input[1])
-    unify_order(w.order, OrderNCHW)
+    w.order.unify(OrderNCHW)
 
     attrs = attribute_dict(onnx_op)
     ksize = list(attrs["kernel_shape"].ints)
@@ -89,7 +92,7 @@ def _convert_conv(converter: ONNXConverter, onnx_op: INodeProto):
     if len(onnx_op.input) == 3:
         # with bias
         b = converter.get_variable(onnx_op.input[2])
-        unify_order(b.order, OrderC)
+        b.order.unify(OrderC)
         y = y + b
 
     converter.set_variable(onnx_op.output[0], y)

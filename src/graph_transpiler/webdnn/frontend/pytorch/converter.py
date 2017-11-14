@@ -1,6 +1,8 @@
 """
 PyTorch Frontend
 """
+import tempfile
+from os import path
 
 from webdnn.frontend.converter import Converter
 from webdnn.frontend.onnx import ONNXConverter
@@ -57,6 +59,9 @@ Module "onnx" cannot be imported. Please check that follow command works correct
         Returns:
             (:class:`~webdnn.Graph`): WebDNN Graph
         """
-        proto_path = "/tmp/model.proto"
-        torch.onnx.export(model, dummy_inputs, proto_path, verbose=False)
-        return ONNXConverter().convert(onnx.load(proto_path))
+        with tempfile.TemporaryDirectory() as tmpdir:
+            proto_path = path.join(tmpdir, "model.proto")
+            torch.onnx.export(model, dummy_inputs, proto_path, verbose=False)
+            graph = ONNXConverter().convert(onnx.load(proto_path))
+
+        return graph

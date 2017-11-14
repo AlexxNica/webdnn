@@ -1,9 +1,8 @@
 """
 ONNX (https://github.com/onnx) Frontend
 """
-from typing import Set, List, Union
+from typing import Set, List, Union, Dict
 
-from webdnn.frontend.constraints import AxisVar
 from webdnn.frontend.converter import Converter
 from webdnn.frontend.onnx.type_hint import *
 from webdnn.graph.graph import Graph
@@ -25,7 +24,7 @@ except ImportError as e:
     pass
 
 
-def attribute_dict(proto: INodeProto):
+def attribute_dict(proto: INodeProto) -> Dict[str, IAttributeProto]:
     return {attr.name: attr for attr in proto.attribute}
 
 
@@ -100,8 +99,7 @@ def _convert_tensor_proto(proto: ITensorProto) -> ConstantVariable:
         raise TypeError(f"[ONNXConverter] type \"{np_type.name}\" is not supported")
 
     data = np.frombuffer(proto.raw_data, np_type.type).reshape([1] if len(proto.dims) == 0 else proto.dims)
-    # noinspection PyTypeChecker
-    return ConstantVariable(data, Order([AxisVar() for _ in range(data.ndim)]))
+    return ConstantVariable(data, Order([None] * data.ndim))
 
 
 def _convert_value_info_proto(proto: IValueInfoProto) -> Variable:
@@ -109,8 +107,7 @@ def _convert_value_info_proto(proto: IValueInfoProto) -> Variable:
     Convert ValueInfoProto into variable.
     """
     shape = [1] if len(proto.type.tensor_type.shape.dim) == 0 else [d.dim_value for d in proto.type.tensor_type.shape.dim]
-    # noinspection PyTypeChecker
-    return Variable(shape, Order([AxisVar() for _ in shape]))
+    return Variable(shape, Order([None] * len(shape)))
 
 
 def _listup_functions(graph: IGraphProto) -> Sequence[INodeProto]:
